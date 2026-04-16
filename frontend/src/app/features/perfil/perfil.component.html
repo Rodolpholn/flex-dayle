@@ -1,0 +1,140 @@
+<!-- Perfil -->
+<div class="space-y-6 max-w-2xl">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Meu Perfil</h1>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Gerencie seus dados pessoais e veículo</p>
+  </div>
+
+  <!-- Alerts -->
+  @if (successMsg()) {
+    <div class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm flex items-center gap-2">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      {{ successMsg() }}
+    </div>
+  }
+  @if (errorMsg()) {
+    <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">{{ errorMsg() }}</div>
+  }
+
+  <!-- Dados Pessoais -->
+  <div class="card">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
+      Dados Pessoais
+    </h2>
+
+    <form [formGroup]="perfilForm" (ngSubmit)="savePerfil()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome</label>
+          <input type="text" formControlName="nome" class="input-field">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sobrenome</label>
+          <input type="text" formControlName="sobrenome" class="input-field">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+        <input type="email" [value]="user?.email || ''" class="input-field opacity-60 cursor-not-allowed" disabled>
+        <p class="mt-1 text-xs text-gray-400">O email não pode ser alterado.</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
+        <input type="tel" formControlName="telefone" class="input-field" placeholder="(11) 99999-9999">
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" [disabled]="saving()" class="btn-primary flex items-center gap-2">
+          @if (saving()) {
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          }
+          Salvar Dados Pessoais
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Veículo -->
+  <div class="card">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+      </svg>
+      Dados do Veículo
+    </h2>
+
+    <form [formGroup]="perfilForm" (ngSubmit)="savePerfil()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marca</label>
+          <input type="text" formControlName="veiculoMarca" class="input-field" placeholder="Ex: Toyota">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Modelo</label>
+          <input type="text" formControlName="veiculoModelo" class="input-field" placeholder="Ex: Corolla">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Placa</label>
+        <input type="text" formControlName="veiculoPlaca" class="input-field" placeholder="Ex: ABC-1234" style="text-transform: uppercase">
+      </div>
+      <div class="pt-2">
+        <button type="submit" [disabled]="saving()" class="btn-primary flex items-center gap-2">
+          @if (saving()) {
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          }
+          Salvar Veículo
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Alterar Senha -->
+  <div class="card">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      Alterar Senha
+    </h2>
+
+    <form [formGroup]="senhaForm" (ngSubmit)="savePassword()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nova Senha</label>
+        <input type="password" formControlName="novaSenha" class="input-field" placeholder="Mínimo 6 caracteres">
+        @if (senhaForm.get('novaSenha')?.invalid && senhaForm.get('novaSenha')?.touched) {
+          <p class="mt-1 text-xs text-red-600">Mínimo 6 caracteres.</p>
+        }
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmar Nova Senha</label>
+        <input type="password" formControlName="confirmarSenha" class="input-field" placeholder="Repita a nova senha">
+        @if (senhaForm.errors?.['passwordMismatch'] && senhaForm.get('confirmarSenha')?.touched) {
+          <p class="mt-1 text-xs text-red-600">As senhas não coincidem.</p>
+        }
+      </div>
+      <div class="pt-2">
+        <button type="submit" [disabled]="savingPassword()" class="btn-primary flex items-center gap-2">
+          @if (savingPassword()) {
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          }
+          Alterar Senha
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
