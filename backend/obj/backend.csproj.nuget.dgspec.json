@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj": {}
+    "C:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj": {}
   },
   "projects": {
-    "c:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj": {
+    "C:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj",
+        "projectUniqueName": "C:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj",
         "projectName": "backend",
-        "projectPath": "c:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj",
+        "projectPath": "C:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\backend.csproj",
         "packagesPath": "C:\\Users\\rodol\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\obj\\",
+        "outputPath": "C:\\Users\\rodol\\Downloads\\PROJETO\\flex-dayle\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\rodol\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -73,6 +73,10 @@
             "Supabase": {
               "target": "Package",
               "version": "[1.1.1, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",

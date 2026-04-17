@@ -27,6 +27,11 @@ export class ThemeService {
   }
 
   private getStoredTheme(): boolean {
+    // Previne erros quando executado no Node.js (SSR / Angular Universal)
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return false;
+    }
+
     const stored = localStorage.getItem(this.THEME_KEY);
     if (stored) return stored === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;

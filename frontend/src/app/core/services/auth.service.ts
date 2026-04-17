@@ -65,6 +65,11 @@ export class AuthService {
   }
 
   getToken(): string | null {
+    // Previne erros no Node.js (SSR / Angular Universal)
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
@@ -88,6 +93,11 @@ export class AuthService {
   }
 
   private getUserFromStorage(): Usuario | null {
+    // Previne erros no Node.js (SSR / Angular Universal)
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+
     const stored = localStorage.getItem(this.USER_KEY);
     return stored ? JSON.parse(stored) : null;
   }

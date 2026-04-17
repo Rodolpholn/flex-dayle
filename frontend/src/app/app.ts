@@ -4,9 +4,10 @@ import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet],
-  template: `<router-outlet />`,
-  styles: []
+  templateUrl: './app.html',
+  styleUrl: './app.scss'
 })
 export class App implements OnInit {
   constructor(private themeService: ThemeService) {}
