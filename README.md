@@ -40,10 +40,11 @@ cd backend
 dotnet restore
 dotnet run
 
-Acesse a documentação em: http://localhost:5153/swaggerFrontendBashcd
+Acesse a documentação em: http://localhost:5153/swagger
 
 ## frontend
 
+cd frontend
 npm install
 ng serve
 
