@@ -15,7 +15,7 @@ export interface Usuario {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  usuario?: Usuario;
+  usuario?: Usuario; // Contém o objeto Usuario com a propriedade 'role'
 }
 
 export interface LoginDto {
@@ -29,6 +29,10 @@ export interface RegisterDto {
   email: string;
   senha: string;
   telefone?: string;
+  // Adicionados como opcionais para permitir cadastro completo desde o início
+  veiculoMarca?: string;
+  veiculoModelo?: string;
+  veiculoPlaca?: string;
 }
 
 export interface UpdatePerfilDto {
@@ -38,4 +42,13 @@ export interface UpdatePerfilDto {
   veiculoMarca?: string;
   veiculoModelo?: string;
   veiculoPlaca?: string;
+}
+
+/**
+ * Interface adicional para facilitar a gestão de usuários
+ * na tela de Admin que você mostrou no Swagger.
+ */
+export interface AdminUsuarioResumo extends Usuario {
+  totalRotas?: number;
+  ganhosTotais?: number;
 }

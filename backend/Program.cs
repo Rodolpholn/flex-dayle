@@ -78,7 +78,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
             NameClaimType = ClaimTypes.NameIdentifier,
-            RoleClaimType = ClaimTypes.Role
+            // AJUSTE: Mapeia o campo "role" do token para o sistema de Roles do .NET
+            RoleClaimType = "role" 
         };
     });
 
@@ -86,8 +87,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
-        policy.RequireClaim("role", "admin")
-              .RequireAuthenticatedUser());
+        policy.RequireAuthenticatedUser()
+              // AJUSTE: Garante que a política procure o claim "role" com valor "admin"
+              .RequireClaim("role", "admin"));
 });
 
 // --- MELHORIA NO CORS ---
