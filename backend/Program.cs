@@ -49,9 +49,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database
+// --- DATABASE COM ESTRATÉGIA DE RETRY (CORREÇÃO PARA TIMEOUT) ---
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    npgsqlOptions => {
+        // Tenta reconectar automaticamente em caso de falhas transitórias ou lentidão do banco
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorCodesToAdd: null);
+    }));
 
 // HTTP Client
 builder.Services.AddHttpClient<ISupabaseAuthService, SupabaseAuthService>();
@@ -60,14 +67,12 @@ builder.Services.AddHttpClient<ISupabaseAuthService, SupabaseAuthService>();
 builder.Services.AddScoped<IRotaService, RotaService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
-// --- JWT Authentication with Supabase (MODO AUTHORITY - SEM CHAVE MANUAL) ---
+// --- JWT Authentication with Supabase (MODO AUTHORITY) ---
 var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // Ao usar Authority, o .NET busca as chaves (JWKS) direto do Supabase.
-        // Isso elimina a necessidade de armazenar ou atualizar manualmente o AnonKey/Secret no backend.
         options.Authority = $"{supabaseUrl}/auth/v1";
         
         options.TokenValidationParameters = new TokenValidationParameters
@@ -82,7 +87,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RoleClaimType = "role" 
         };
 
-        // Necessário para o modo Authority funcionar corretamente no ambiente de deploy
         options.RequireHttpsMetadata = false; 
     });
 
