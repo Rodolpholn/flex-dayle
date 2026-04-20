@@ -13,6 +13,8 @@ namespace backend.Services
         Task<bool> BlockUsuarioAsync(Guid id);
         Task<bool> UnblockUsuarioAsync(Guid id);
         Task<bool> DeleteUsuarioAsync(Guid id);
+        // Caso precise de um método para verificar se o email é admin via banco:
+        Task<bool> IsAdminAsync(string email);
     }
 
     public class AdminService : IAdminService
@@ -24,6 +26,11 @@ namespace backend.Services
         {
             _context = context;
             _authService = authService;
+        }
+
+        public async Task<bool> IsAdminAsync(string email)
+        {
+            return await _context.Usuarios.AnyAsync(u => u.Email == email && u.Role == "admin");
         }
 
         public async Task<AdminDashboardDto> GetAdminDashboardAsync()
@@ -59,6 +66,7 @@ namespace backend.Services
 
         public async Task<List<UsuarioDto>> GetAllUsuariosAsync(string? search)
         {
+            // Filtra para não listar outros admins na gestão de usuários comum
             var query = _context.Usuarios.Where(u => u.Role != "admin");
 
             if (!string.IsNullOrWhiteSpace(search))

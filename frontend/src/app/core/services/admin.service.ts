@@ -6,10 +6,11 @@ import { AdminDashboard } from '../models/rota.model';
 import { Usuario } from '../models/usuario.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminService {
-  private readonly baseUrl = `${environment.apiUrl}/admin`;
+  // AJUSTE: Alterado para 'Admin' com 'A' maiúsculo para alinhar com o padrão do Controller .NET
+  private readonly baseUrl = `${environment.apiUrl}/Admin`;
 
   constructor(private http: HttpClient) {}
 
