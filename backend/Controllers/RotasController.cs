@@ -20,26 +20,47 @@ namespace backend.Controllers
 
         private Guid GetUserId()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                      ?? User.FindFirst("sub")?.Value;
-            return Guid.Parse(userId!);
+            // O Supabase coloca o ID no claim 'sub'
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                              ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                throw new UnauthorizedAccessException("ID do usuário não encontrado no token.");
+            }
+
+            // Tenta converter com segurança para Guid
+            if (!Guid.TryParse(userIdClaim, out Guid userGuid))
+            {
+                throw new UnauthorizedAccessException("Formato de ID de usuário inválido.");
+            }
+
+            return userGuid;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetRotas([FromQuery] int? mes, [FromQuery] int? ano)
         {
-            var userId = GetUserId();
-            var rotas = await _rotaService.GetRotasByUserAsync(userId, mes, ano);
-            return Ok(rotas);
+            try {
+                var userId = GetUserId();
+                var rotas = await _rotaService.GetRotasByUserAsync(userId, mes, ano);
+                return Ok(rotas);
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized();
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRota(Guid id)
         {
-            var userId = GetUserId();
-            var rota = await _rotaService.GetRotaByIdAsync(id, userId);
-            if (rota == null) return NotFound();
-            return Ok(rota);
+            try {
+                var userId = GetUserId();
+                var rota = await _rotaService.GetRotaByIdAsync(id, userId);
+                if (rota == null) return NotFound();
+                return Ok(rota);
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized();
+            }
         }
 
         [HttpPost]
@@ -48,35 +69,51 @@ namespace backend.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var userId = GetUserId();
-            var rota = await _rotaService.CreateRotaAsync(userId, dto);
-            return CreatedAtAction(nameof(GetRota), new { id = rota.Id }, rota);
+            try {
+                var userId = GetUserId();
+                var rota = await _rotaService.CreateRotaAsync(userId, dto);
+                return CreatedAtAction(nameof(GetRota), new { id = rota.Id }, rota);
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized();
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRota(Guid id, [FromBody] UpdateRotaDto dto)
         {
-            var userId = GetUserId();
-            var rota = await _rotaService.UpdateRotaAsync(id, userId, dto);
-            if (rota == null) return NotFound();
-            return Ok(rota);
+            try {
+                var userId = GetUserId();
+                var rota = await _rotaService.UpdateRotaAsync(id, userId, dto);
+                if (rota == null) return NotFound();
+                return Ok(rota);
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized();
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRota(Guid id)
         {
-            var userId = GetUserId();
-            var success = await _rotaService.DeleteRotaAsync(id, userId);
-            if (!success) return NotFound();
-            return NoContent();
+            try {
+                var userId = GetUserId();
+                var success = await _rotaService.DeleteRotaAsync(id, userId);
+                if (!success) return NotFound();
+                return NoContent();
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized();
+            }
         }
 
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard([FromQuery] int? mes, [FromQuery] int? ano)
         {
-            var userId = GetUserId();
-            var dashboard = await _rotaService.GetDashboardAsync(userId, mes, ano);
-            return Ok(dashboard);
+            try {
+                var userId = GetUserId();
+                var dashboard = await _rotaService.GetDashboardAsync(userId, mes, ano);
+                return Ok(dashboard);
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized();
+            }
         }
     }
 }

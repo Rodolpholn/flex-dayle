@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewEncapsulation } from '@angular/core'; // Adicionado ViewEncapsulation
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RotaService } from '../../core/services/rota.service';
@@ -16,7 +16,9 @@ interface CalendarDay {
   selector: 'app-calendario',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, CurrencyPipe],
-  templateUrl: './calendario.component.html'
+  templateUrl: './calendario.component.html',
+  // Força o uso dos estilos globais (styles.scss) para o Modal funcionar
+  encapsulation: ViewEncapsulation.None,
 })
 export class CalendarioComponent implements OnInit {
   currentDate = signal(new Date());
@@ -30,16 +32,31 @@ export class CalendarioComponent implements OnInit {
   form: FormGroup;
 
   weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  meses = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ];
 
-  constructor(private rotaService: RotaService, private fb: FormBuilder) {
+  constructor(
+    private rotaService: RotaService,
+    private fb: FormBuilder,
+  ) {
     this.form = this.fb.group({
       valorBruto: ['', [Validators.required, Validators.min(0.01)]],
       kmRodado: ['', [Validators.required, Validators.min(0.01)]],
       litrosAbastecidos: [''],
       valorAbastecimento: [''],
-      consumioMedioVeiculo: [10]
+      consumioMedioVeiculo: [10],
     });
   }
 
@@ -57,7 +74,7 @@ export class CalendarioComponent implements OnInit {
         this.buildCalendar();
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
@@ -71,22 +88,22 @@ export class CalendarioComponent implements OnInit {
 
     const days: CalendarDay[] = [];
 
-    // Previous month days
+    // Dias do mês anterior
     for (let i = firstDay.getDay(); i > 0; i--) {
       const d = new Date(year, month, 1 - i);
       days.push({ date: d, day: d.getDate(), isCurrentMonth: false, isToday: false });
     }
 
-    // Current month days
+    // Dias do mês atual
     for (let d = 1; d <= lastDay.getDate(); d++) {
       const date = new Date(year, month, d);
       const dateStr = this.formatDate(date);
-      const rota = this.rotas().find(r => r.dataRota === dateStr);
+      const rota = this.rotas().find((r) => r.dataRota === dateStr);
       const isToday = date.toDateString() === today.toDateString();
       days.push({ date, day: d, isCurrentMonth: true, isToday, rota });
     }
 
-    // Next month days to fill grid
+    // Completa a grade com dias do próximo mês
     const remaining = 42 - days.length;
     for (let d = 1; d <= remaining; d++) {
       const date = new Date(year, month + 1, d);
@@ -111,6 +128,8 @@ export class CalendarioComponent implements OnInit {
   openModal(day: CalendarDay): void {
     if (!day.isCurrentMonth) return;
     this.selectedDay.set(day);
+
+    // Reseta o formulário com valor padrão de consumo
     this.form.reset({ consumioMedioVeiculo: 10 });
 
     if (day.rota) {
@@ -119,7 +138,7 @@ export class CalendarioComponent implements OnInit {
         kmRodado: day.rota.kmRodado,
         litrosAbastecidos: day.rota.litrosAbastecidos || '',
         valorAbastecimento: day.rota.valorAbastecimento || '',
-        consumioMedioVeiculo: day.rota.consumioMedioVeiculo
+        consumioMedioVeiculo: day.rota.consumioMedioVeiculo,
       });
     }
     this.modalOpen.set(true);
@@ -145,9 +164,13 @@ export class CalendarioComponent implements OnInit {
       dataRota: this.formatDate(day.date),
       valorBruto: +this.form.value.valorBruto,
       kmRodado: +this.form.value.kmRodado,
-      litrosAbastecidos: this.form.value.litrosAbastecidos ? +this.form.value.litrosAbastecidos : undefined,
-      valorAbastecimento: this.form.value.valorAbastecimento ? +this.form.value.valorAbastecimento : undefined,
-      consumioMedioVeiculo: +this.form.value.consumioMedioVeiculo || 10
+      litrosAbastecidos: this.form.value.litrosAbastecidos
+        ? +this.form.value.litrosAbastecidos
+        : undefined,
+      valorAbastecimento: this.form.value.valorAbastecimento
+        ? +this.form.value.valorAbastecimento
+        : undefined,
+      consumioMedioVeiculo: +this.form.value.consumioMedioVeiculo || 10,
     };
 
     const obs = day.rota
@@ -160,13 +183,15 @@ export class CalendarioComponent implements OnInit {
         this.closeModal();
         this.loadRotas();
       },
-      error: () => this.saving.set(false)
+      error: () => this.saving.set(false),
     });
   }
 
   deleteRota(): void {
     const day = this.selectedDay();
     if (!day?.rota) return;
+
+    if (!confirm('Tem certeza que deseja excluir esta rota?')) return;
 
     this.deleting.set(true);
     this.rotaService.deleteRota(day.rota.id).subscribe({
@@ -175,7 +200,7 @@ export class CalendarioComponent implements OnInit {
         this.closeModal();
         this.loadRotas();
       },
-      error: () => this.deleting.set(false)
+      error: () => this.deleting.set(false),
     });
   }
 
