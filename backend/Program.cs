@@ -60,34 +60,36 @@ builder.Services.AddHttpClient<ISupabaseAuthService, SupabaseAuthService>();
 builder.Services.AddScoped<IRotaService, RotaService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
-// JWT Authentication with Supabase
+// --- JWT Authentication with Supabase (MODO AUTHORITY - SEM CHAVE MANUAL) ---
 var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "";
-var jwtSecret = builder.Configuration["Supabase:JwtSecret"] ?? "";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Ao usar Authority, o .NET busca as chaves (JWKS) direto do Supabase.
+        // Isso elimina a necessidade de armazenar ou atualizar manualmente o AnonKey/Secret no backend.
+        options.Authority = $"{supabaseUrl}/auth/v1";
+        
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-            
-            // --- AJUSTE DE FLEXIBILIDADE: Evita o erro 401 por divergência de URL ---
-            ValidateIssuer = false, 
-            ValidateAudience = false, 
-            
+            ValidateIssuer = true,
+            ValidIssuer = $"{supabaseUrl}/auth/v1",
+            ValidateAudience = true,
+            ValidAudience = "authenticated",
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
             NameClaimType = ClaimTypes.NameIdentifier,
             RoleClaimType = "role" 
         };
+
+        // Necessário para o modo Authority funcionar corretamente no ambiente de deploy
+        options.RequireHttpsMetadata = false; 
     });
 
 // Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
-        // --- AJUSTE TEMPORÁRIO: Exige apenas autenticação para testar o acesso ---
         policy.RequireAuthenticatedUser());
 });
 
@@ -114,10 +116,8 @@ app.UseSwagger();
 app.UseSwaggerUI(c => 
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlexDayle API v1");
-    c.RoutePrefix = "swagger"; // A URL será: seu-app.railway.app/swagger
+    c.RoutePrefix = "swagger"; 
 });
-
-// app.UseHttpsRedirection(); 
 
 app.UseRouting();
 
