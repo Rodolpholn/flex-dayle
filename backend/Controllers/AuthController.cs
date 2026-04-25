@@ -40,11 +40,28 @@ namespace backend.Controllers
                 if (result == null)
                     return BadRequest(new { message = "Erro ao criar conta no serviço de autenticação. Verifique se o e-mail é válido." });
 
-                return Ok(new { message = "Conta criada com sucesso! Verifique seu email para confirmar o cadastro.", token = result.AccessToken });
+                // --- INICIO DA ATUALIZAÇÃO: GRAVAÇÃO NO BANCO LOCAL ---
+                var novoUsuario = new Usuario
+                {
+                    Id = Guid.NewGuid(),
+                    Nome = dto.Nome,
+                    Sobrenome = dto.Sobrenome,
+                    Email = dto.Email,
+                    Telefone = dto.Telefone,
+                    Role = dto.Role ?? "driver", // Define driver como padrão se vier nulo
+                    Ativo = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Usuarios.Add(novoUsuario);
+                await _context.SaveChangesAsync();
+                // --- FIM DA ATUALIZAÇÃO ---
+
+                return Ok(new { message = "Conta criada com sucesso!", token = result.AccessToken });
             }
             catch (Exception ex)
             {
-                // Retorna o erro detalhado para facilitar o debug no Railway
+                // Retorna o erro detalhado para facilitar o debug
                 return StatusCode(500, new 
                 { 
                     message = "Erro interno ao processar o registro.", 

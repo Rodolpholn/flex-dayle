@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://flex-dayle-production.up.railway.app/api',
+  apiUrl: 'http://163.176.34.126:8080/api',
 };
