@@ -20,7 +20,7 @@ namespace backend.Controllers
 
         private Guid GetUserId()
         {
-            // O Supabase coloca o ID no claim 'sub'
+            // O Supabase coloca o ID no claim 'sub' ou 'NameIdentifier'
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                               ?? User.FindFirst("sub")?.Value;
 
@@ -29,7 +29,6 @@ namespace backend.Controllers
                 throw new UnauthorizedAccessException("ID do usuário não encontrado no token.");
             }
 
-            // Tenta converter com segurança para Guid
             if (!Guid.TryParse(userIdClaim, out Guid userGuid))
             {
                 throw new UnauthorizedAccessException("Formato de ID de usuário inválido.");
@@ -71,10 +70,13 @@ namespace backend.Controllers
 
             try {
                 var userId = GetUserId();
+
                 var rota = await _rotaService.CreateRotaAsync(userId, dto);
                 return CreatedAtAction(nameof(GetRota), new { id = rota.Id }, rota);
             } catch (UnauthorizedAccessException) {
                 return Unauthorized();
+            } catch (Exception ex) {
+                return BadRequest(new { message = ex.Message });
             }
         }
 

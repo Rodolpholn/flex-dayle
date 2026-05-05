@@ -48,7 +48,7 @@ namespace backend.Controllers
                     Sobrenome = dto.Sobrenome,
                     Email = dto.Email,
                     Telefone = dto.Telefone,
-                    Role = dto.Role ?? "driver", // Define driver como padrão se vier nulo
+                    Role = "user", // Define driver como padrão se vier nulo
                     Ativo = true,
                     CreatedAt = DateTime.UtcNow
                 };
