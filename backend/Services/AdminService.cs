@@ -13,7 +13,6 @@ namespace backend.Services
         Task<bool> BlockUsuarioAsync(Guid id);
         Task<bool> UnblockUsuarioAsync(Guid id);
         Task<bool> DeleteUsuarioAsync(Guid id);
-        // Caso precise de um método para verificar se o email é admin via banco:
         Task<bool> IsAdminAsync(string email);
     }
 
@@ -42,17 +41,27 @@ namespace backend.Services
             decimal kmTotal = rotas.Sum(r => r.KmRodado);
             decimal ticketMedio = kmTotal > 0 ? Math.Round(volumeGanhos / kmTotal, 2) : 0;
 
-            // Cadastros por mês (últimos 6 meses)
-            var cadastrosPorMes = await _context.Usuarios
+            // CORREÇÃO AQUI: Buscamos os dados agrupados do banco primeiro
+            var agrupamentoBanco = await _context.Usuarios
                 .Where(u => u.Role != "admin" && u.CreatedAt >= DateTime.UtcNow.AddMonths(-6))
                 .GroupBy(u => new { u.CreatedAt.Year, u.CreatedAt.Month })
-                .Select(g => new CadastrosMesDto
+                .Select(g => new
                 {
-                    Mes = $"{g.Key.Month:D2}/{g.Key.Year}",
+                    Ano = g.Key.Year,
+                    MesNum = g.Key.Month,
                     Total = g.Count()
                 })
-                .OrderBy(c => c.Mes)
                 .ToListAsync();
+
+            // Agora formatamos a string do mês na memória (C#)
+            var cadastrosPorMes = agrupamentoBanco
+                .Select(x => new CadastrosMesDto
+                {
+                    Mes = $"{x.MesNum:D2}/{x.Ano}",
+                    Total = x.Total
+                })
+                .OrderBy(c => c.Mes)
+                .ToList();
 
             return new AdminDashboardDto
             {
@@ -66,7 +75,6 @@ namespace backend.Services
 
         public async Task<List<UsuarioDto>> GetAllUsuariosAsync(string? search)
         {
-            // Filtra para não listar outros admins na gestão de usuários comum
             var query = _context.Usuarios.Where(u => u.Role != "admin");
 
             if (!string.IsNullOrWhiteSpace(search))
