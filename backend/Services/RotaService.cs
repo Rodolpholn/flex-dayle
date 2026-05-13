@@ -2,19 +2,10 @@ using backend.Data;
 using backend.Models;
 using backend.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace backend.Services
 {
-    public interface IRotaService
-    {
-        Task<List<RotaResponseDto>> GetRotasByUserAsync(Guid userId, int? mes, int? ano);
-        Task<RotaResponseDto?> GetRotaByIdAsync(Guid id, Guid userId);
-        Task<RotaResponseDto> CreateRotaAsync(Guid userId, CreateRotaDto dto);
-        Task<RotaResponseDto?> UpdateRotaAsync(Guid id, Guid userId, UpdateRotaDto dto);
-        Task<bool> DeleteRotaAsync(Guid id, Guid userId);
-        Task<DashboardDto> GetDashboardAsync(Guid userId, int? mes, int? ano);
-    }
-
     public class RotaService : IRotaService
     {
         private readonly AppDbContext _context;
@@ -33,7 +24,6 @@ namespace backend.Services
                 return rota.ValorAbastecimento.Value / rota.KmRodado;
             }
 
-            // Custo baseado no consumo médio fixo (preço médio estimado R$6/litro)
             decimal precoMedioLitro = 6.0m;
             decimal litrosUsados = rota.KmRodado / rota.ConsumioMedioVeiculo;
             return (litrosUsados * precoMedioLitro) / rota.KmRodado;
@@ -158,7 +148,6 @@ namespace backend.Services
             decimal kmTotal = rotas.Sum(r => r.KmRodado);
             decimal litrosTotal = rotas.Sum(r => r.LitrosAbastecidos ?? 0);
 
-            // Projeção mensal (mês atual)
             var mesAtual = DateTime.UtcNow.Month;
             var anoAtual = DateTime.UtcNow.Year;
             var rotasMes = rotas.Where(r => r.DataRota.Month == mesAtual && r.DataRota.Year == anoAtual).ToList();
@@ -175,6 +164,33 @@ namespace backend.Services
                 TotalRotas = rotas.Count,
                 ProjecaoMensal = projecaoMensal
             };
+        }
+
+        // NOVO MÉTODO IMPLEMENTADO
+        public async Task<List<GraficoMensalDto>> GetGraficoAnualAsync(Guid userId, int ano)
+        {
+            // Busca rotas do ano direto do banco
+            var rotasAno = await _context.Rotas
+                .Where(r => r.UserId == userId && r.DataRota.Year == ano)
+                .ToListAsync();
+
+            // Gera os 12 meses para garantir que o gráfico não tenha "buracos"
+            var mesesReferencia = Enumerable.Range(1, 12).Select(m => new
+            {
+                Numero = m,
+                Nome = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m).ToUpper().Replace(".", "")
+            });
+
+            // Agrupa os ganhos por mês na memória
+            var resultado = mesesReferencia.Select(m => new GraficoMensalDto
+            {
+                Mes = m.Nome,
+                Ganho = rotasAno
+                    .Where(r => r.DataRota.Month == m.Numero)
+                    .Sum(r => r.ValorBruto)
+            }).ToList();
+
+            return resultado;
         }
     }
 }

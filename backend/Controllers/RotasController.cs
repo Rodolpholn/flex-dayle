@@ -20,7 +20,6 @@ namespace backend.Controllers
 
         private Guid GetUserId()
         {
-            // O Supabase coloca o ID no claim 'sub' ou 'NameIdentifier'
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                               ?? User.FindFirst("sub")?.Value;
 
@@ -115,6 +114,26 @@ namespace backend.Controllers
                 return Ok(dashboard);
             } catch (UnauthorizedAccessException) {
                 return Unauthorized();
+            }
+        }
+
+        // NOVO ENDPOINT PARA O GRÁFICO ANUAL
+        [HttpGet("grafico-anual/{ano}")]
+        public async Task<IActionResult> GetGraficoAnual(int ano)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var dados = await _rotaService.GetGraficoAnualAsync(userId, ano);
+                return Ok(dados);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Erro ao carregar dados do gráfico.", error = ex.Message });
             }
         }
     }
