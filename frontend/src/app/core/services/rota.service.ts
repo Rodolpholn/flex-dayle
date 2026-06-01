@@ -4,8 +4,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CreateRotaDto, DashboardData, Rota, UpdateRotaDto } from '../models/rota.model';
 
+// Interface para o novo gráfico
+export interface GraficoMensal {
+  mes: string;
+  ganho: number;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RotaService {
   private readonly baseUrl = `${environment.apiUrl}/rotas`;
@@ -40,5 +46,10 @@ export class RotaService {
     if (mes) params = params.set('mes', mes.toString());
     if (ano) params = params.set('ano', ano.toString());
     return this.http.get<DashboardData>(`${this.baseUrl}/dashboard`, { params });
+  }
+
+  // NOVO MÉTODO PARA O GRÁFICO ANUAL
+  getGraficoAnual(ano: number): Observable<GraficoMensal[]> {
+    return this.http.get<GraficoMensal[]>(`${this.baseUrl}/grafico-anual/${ano}`);
   }
 }
