@@ -13,8 +13,11 @@ namespace backend.Services
     Task<RotaResponseDto> CreateRotaAsync(Guid userId, CreateRotaDto dto);
     Task<RotaResponseDto?> UpdateRotaAsync(Guid id, Guid userId, UpdateRotaDto dto);
     Task<bool> DeleteRotaAsync(Guid id, Guid userId);
+    // Novo método para o dashboard
     Task<DashboardDto> GetDashboardAsync(Guid userId, int? mes, int? ano);
     // Novo método para o gráfico
     Task<List<GraficoMensalDto>> GetGraficoAnualAsync(Guid userId, int ano);
+    // Novo método para o relatório mensal
+    Task<RelatorioResumoDto> ObterRelatorioMensalAsync(Guid userId, int mes, int ano);
     }
 }

@@ -136,5 +136,27 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Erro ao carregar dados do gráfico.", error = ex.Message });
             }
         }
+
+        // ========================================================
+        // NOVO ENDPOINT: COMPILADO PARA A TELA DE RELATÓRIOS
+        // ========================================================
+        [HttpGet("relatorio-mensal")]
+        public async Task<IActionResult> GetRelatorioMensal([FromQuery] int mes, [FromQuery] int ano)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var resumo = await _rotaService.ObterRelatorioMensalAsync(userId, mes, ano);
+                return Ok(resumo);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Erro ao processar o relatório consolidado.", error = ex.Message });
+            }
+        }
     }
 }

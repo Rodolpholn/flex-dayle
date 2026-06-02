@@ -166,22 +166,18 @@ namespace backend.Services
             };
         }
 
-        // NOVO MÉTODO IMPLEMENTADO
         public async Task<List<GraficoMensalDto>> GetGraficoAnualAsync(Guid userId, int ano)
         {
-            // Busca rotas do ano direto do banco
             var rotasAno = await _context.Rotas
                 .Where(r => r.UserId == userId && r.DataRota.Year == ano)
                 .ToListAsync();
 
-            // Gera os 12 meses para garantir que o gráfico não tenha "buracos"
             var mesesReferencia = Enumerable.Range(1, 12).Select(m => new
             {
                 Numero = m,
                 Nome = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m).ToUpper().Replace(".", "")
             });
 
-            // Agrupa os ganhos por mês na memória
             var resultado = mesesReferencia.Select(m => new GraficoMensalDto
             {
                 Mes = m.Nome,
@@ -191,6 +187,43 @@ namespace backend.Services
             }).ToList();
 
             return resultado;
+        }
+
+        // ==========================================
+        // NOVO MÉTODO: RELATÓRIO MENSAL CONSOLIDADO
+        // ==========================================
+        public async Task<RelatorioResumoDto> ObterRelatorioMensalAsync(Guid userId, int mes, int ano)
+        {
+            // Filtra as rotas no banco pelo usuário, mês e ano selecionados
+            var rotasPeriodo = await _context.Rotas
+                .Where(r => r.UserId == userId && 
+                            r.DataRota.Month == mes && 
+                            r.DataRota.Year == ano)
+                .ToListAsync();
+
+            // Retorna zerado de forma segura se não houver registros
+            if (!rotasPeriodo.Any())
+            {
+                return new RelatorioResumoDto();
+            }
+
+            // Agrega os dados com base nas propriedades reais da sua Entidade
+            decimal faturamentoBruto = rotasPeriodo.Sum(r => r.ValorBruto);
+            decimal kmTotalRodado = rotasPeriodo.Sum(r => r.KmRodado);
+            
+            // Segue a mesma lógica do seu dashboard para computar combustíveis preenchidos explicitamente
+            decimal gastoCombustivel = rotasPeriodo.Sum(r => r.ValorAbastecimento ?? 0);
+            
+            // Soma o Lucro de cada dia usando a sua função interna de cálculo estimado
+            decimal lucroLiquido = rotasPeriodo.Sum(r => CalcularLucroDia(r));
+
+            return new RelatorioResumoDto
+            {
+                FaturamentoBruto = faturamentoBruto,
+                LucroLiquido = lucroLiquido,
+                GastoCombustivel = gastoCombustivel,
+                KmTotalRodado = kmTotalRodado
+            };
         }
     }
 }
